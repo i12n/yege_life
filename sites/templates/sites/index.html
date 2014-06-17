@@ -1,0 +1,204 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<link rel="Stylesheet" type="text/css" href="{% static 'sites/style.css' %}"/>
+ <script type="text/javascript"
+      src="http://maps.googleapis.com/maps/api/js?key=AIzaSyCn2deGsxsTPqYiwc3DPBbzHMjkuKVYCKg&sensor=FALSE">
+ </script>
+<script type="text/javascript">
+
+
+function HomeControl(controlDiv, map) {
+
+  // Set CSS styles for the DIV containing the control
+  // Setting padding to 5 px will offset the control
+  // from the edge of the map
+  controlDiv.style.padding = '5px';
+
+  // Set CSS for the control border
+  var controlUI = document.createElement('div');
+  controlUI.style.backgroundColor = 'white';
+  //controlUI.style.borderStyle = 'solid';
+  //controlUI.style.borderWidth = '2px';
+  controlUI.style.cursor = 'pointer';
+  controlUI.style.textAlign = 'center';
+  controlUI.title = 'Click to set the map to Home';
+  controlDiv.appendChild(controlUI);
+
+  // Set CSS for the control interior
+  var controlText = document.createElement('div');
+  controlText.style.fontFamily = 'Arial,sans-serif';
+  controlText.style.fontSize = '12px';
+  controlText.style.paddingLeft = '4px';
+  controlText.style.paddingRight = '4px';
+  controlText.innerHTML = '<b>X</b>';
+  controlUI.appendChild(controlText);
+
+  // Setup the click event listeners: simply set the map to
+  // Chicago
+  google.maps.event.addDomListener(controlUI, 'click', function() {
+    var map_canvas=document.getElementById("map_canvas");
+		map_canvas.style.display="none";
+		var map_address=document.getElementById("map_address");
+		map_address.style.display="none";
+		var panel=document.getElementById("panel");
+				panel.style.display="none";
+  });
+
+}
+
+
+
+
+function setText(_content_,_date_time){
+var html="<div class='post_item'>"+
+			"<p class='post_item_content'>"+_content_
+			+
+			"</p>"+
+			"<div class='post_item_footer'>"+
+				"<span class='post_item_date'>发布于"+_date_time+
+
+				 "</span>"+
+			"</div>"+	
+		"</div>";
+	return html;
+}
+
+function  setLocation(_item,_date_time){
+var html="<div class='post_item'>"+
+            "<p class='post_item_content'>"+"我在"
+            +_item.Label+
+			"<input id='"+_item.MsgId+"' type='button' value='点击查看' />"+
+            "</p>"+
+            "<div class='post_item_footer'>"+
+                "<span class='post_item_date'>发布于"+_date_time+
+
+                 "</span>"+
+            "</div>"+
+        "</div>";
+	return html;
+}
+
+function  showAddress(_item){
+document.getElementById(_item.MsgId).onclick=function (){
+		//var offsets = .getBoundingClientRect();
+		////var top = offsets.top;
+		//var left = offsets.left;
+
+		return function(X,Y,AD,Z,google){
+			return function(event){
+				 var e = event || window.event;
+				 var offsets = this.getBoundingClientRect();
+				 var top = offsets.top;
+				var left = offsets.left;
+				//var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+				//var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+				//var x = e.pageX || e.clientX + scrollX;
+				//var y = e.pageY || e.clientY + scrollY;
+				var panel=document.getElementById("panel");
+				panel.style.display="block";
+				var map_canvas=document.getElementById("map_canvas");
+				map_canvas.style.display="block";
+				map_canvas.style.top=top.toString()+"px";
+				map_canvas.style.left=left.toString()+"px";
+				
+				var map_address=document.getElementById("map_address");
+				map_address.style.display="block";
+				map_address.style.top=(top+210).toString()+"px";
+				map_address.style.left=left.toString()+"px";
+				map_address.innerText=AD;
+				
+			var mapOptions = {
+				zoom: Z,
+				center: new google.maps.LatLng(X, Y),
+				mapTypeId: google.maps.MapTypeId.ROADMAP,
+				mapTypeControl: false,
+				panControl: false
+
+			}
+			var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
+				var homeControlDiv = document.createElement('div');
+				var homeControl = new HomeControl(homeControlDiv, map);
+
+				homeControlDiv.index = 1;
+				map.controls[google.maps.ControlPosition.TOP_RIGHT].push(homeControlDiv);
+
+			//var pan=document.getElementById("pan");
+			//pan.className ="pan-show";
+			}
+		}(_item.Location_X,_item.Location_Y,_item.Label,parseFloat(_item.Scale),google);
+	}();
+
+}
+
+window.onload=function(){
+
+var xmlhttp;
+if (window.XMLHttpRequest){// code for IE7+, Firefox, Chrome, Opera, Safari
+  	xmlhttp=new XMLHttpRequest();
+  }
+else{// code for IE6, IE5
+  	xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+}
+
+
+var url="/sites/{{ username }}/get/";
+xmlhttp.open("GET",url,true);
+xmlhttp.send();
+xmlhttp.onreadystatechange=function(){
+  if (xmlhttp.readyState==4 && xmlhttp.status==200)
+    {
+    var text=JSON.parse(xmlhttp.responseText);
+	if (text.success==true){
+		var items=text.news;
+		var html="";
+		
+		var center=document.getElementById("center") ;
+		for (var i in items){
+			_name=items[i].Content;
+			_createtime=items[i].CreateTime;
+			
+			if(items[i].MsgType=="text"){
+				html=setText(_name,_createtime);
+				
+				center.innerHTML+=html;		
+			}
+			if(items[i].MsgType=="location"){
+				html=setLocation(items[i],_createtime);
+				center.innerHTML+=html;		
+				showAddress(items[i]);
+			}
+		}
+	
+	}
+    }
+  }
+
+
+}
+</script>
+</head>
+<body>
+	<div id="panel">
+		<div id="map_canvas" > </div>
+		<div id="map_address" > </div>
+	</div>
+<div id="container">
+<div class="header">
+	<ul class="tabs">
+		<li><a href="http://yege.me">首页</a></li>
+		<li><a href="http://blog.yege.me">博客</a></li>
+		<li><a href="#">关于</a></li></br>
+	</ul>
+</div>
+	<div class="content">
+	<div class="leftcontent"></div>
+	<div class="rightcontent"></div>
+	<div class="center" id="center"></div>
+	</div>
+</div>
+<div class="footer"><div>
+</body>
+</html>
