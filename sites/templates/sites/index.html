@@ -24,7 +24,7 @@ function HomeControl(controlDiv, map) {
   //controlUI.style.borderWidth = '2px';
   controlUI.style.cursor = 'pointer';
   controlUI.style.textAlign = 'center';
-  controlUI.title = 'Click to set the map to Home';
+  controlUI.title = 'Click to close the map';
   controlDiv.appendChild(controlUI);
 
   // Set CSS for the control interior
@@ -70,7 +70,7 @@ function  setLocation(_item,_date_time){
 var html="<div class='post_item'>"+
             "<p class='post_item_content'>"+"我在"
             +_item.Label+
-			"<input id='"+_item.MsgId+"' type='button' value='点击查看' />"+
+			"&nbsp;<input id='"+_item.MsgId+"' type='button' value='点击查看' />"+
             "</p>"+
             "<div class='post_item_footer'>"+
                 "<span class='post_item_date'>发布于"+_date_time+
@@ -83,9 +83,6 @@ var html="<div class='post_item'>"+
 
 function  showAddress(_item){
 document.getElementById(_item.MsgId).onclick=function (){
-		//var offsets = .getBoundingClientRect();
-		////var top = offsets.top;
-		//var left = offsets.left;
 
 		return function(X,Y,AD,Z,google){
 			return function(event){
@@ -93,10 +90,6 @@ document.getElementById(_item.MsgId).onclick=function (){
 				 var offsets = this.getBoundingClientRect();
 				 var top = offsets.top;
 				var left = offsets.left;
-				//var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
-				//var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
-				//var x = e.pageX || e.clientX + scrollX;
-				//var y = e.pageY || e.clientY + scrollY;
 				var panel=document.getElementById("panel");
 				panel.style.display="block";
 				var map_canvas=document.getElementById("map_canvas");
@@ -108,7 +101,7 @@ document.getElementById(_item.MsgId).onclick=function (){
 				map_address.style.display="block";
 				map_address.style.top=(top+210).toString()+"px";
 				map_address.style.left=left.toString()+"px";
-				map_address.innerText=AD;
+				map_address.innerHTML=AD;
 				
 			var mapOptions = {
 				zoom: Z,
@@ -121,10 +114,14 @@ document.getElementById(_item.MsgId).onclick=function (){
 			var map = new google.maps.Map(document.getElementById("map_canvas"), mapOptions);
 				var homeControlDiv = document.createElement('div');
 				var homeControl = new HomeControl(homeControlDiv, map);
-
 				homeControlDiv.index = 1;
 				map.controls[google.maps.ControlPosition.TOP_RIGHT].push(homeControlDiv);
-
+				var marker = new google.maps.Marker({
+					position:new google.maps.LatLng(X, Y),
+					icon: "{% static 'sites/blue-dot.png' %}",
+					map: map,
+					title: '我在这里'
+				});
 			//var pan=document.getElementById("pan");
 			//pan.className ="pan-show";
 			}
@@ -154,24 +151,28 @@ xmlhttp.onreadystatechange=function(){
 	if (text.success==true){
 		var items=text.news;
 		var html="";
-		
+		var loc_items=new Array()
 		var center=document.getElementById("center") ;
 		for (var i in items){
 			_name=items[i].Content;
 			_createtime=items[i].CreateTime;
 			
 			if(items[i].MsgType=="text"){
-				html=setText(_name,_createtime);
-				
-				center.innerHTML+=html;		
+				html=setText(_name,_createtime)+html;	
 			}
 			if(items[i].MsgType=="location"){
-				html=setLocation(items[i],_createtime);
-				center.innerHTML+=html;		
-				showAddress(items[i]);
+				html=setLocation(items[i],_createtime)+html;
+				loc_items.push(i);
+
+				//showAddress(items[i]);
 			}
 		}
-	
+		center.innerHTML=html;	
+		for(var i in loc_items){
+			var k=loc_items[i];
+			showAddress(items[k]);
+			
+		}
 	}
     }
   }

@@ -55,7 +55,7 @@ def thread_func():
  
 
 FILE_PATH='/home/git/yege_life.git/files/'
-
+#FILE_PATH='h:/life/yege_life/files/'
 def write_months(username,YYYYmm):
 	try:
 		file_path=FILE_PATH+username+'/'
