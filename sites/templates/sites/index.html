@@ -80,6 +80,17 @@ var html="<div class='post_item'>"+
         "</div>";
 	return html;
 }
+function  setImage(_item,_date_time){
+var html="<div class='post_item'>"+
+			"<img src='"+_item.PicUrl+"'/>"+
+            "<div class='post_item_footer'>"+
+                "<span class='post_item_date'>发布于"+_date_time+
+
+                 "</span>"+
+            "</div>"+
+        "</div>";
+	return html;
+}
 
 function  showAddress(_item){
 document.getElementById(_item.MsgId).onclick=function (){
@@ -159,6 +170,9 @@ xmlhttp.onreadystatechange=function(){
 			
 			if(items[i].MsgType=="text"){
 				html=setText(_name,_createtime)+html;	
+			}
+			if(items[i].MsgType=="image"){
+				html=setImage(items[i],_createtime)+html;
 			}
 			if(items[i].MsgType=="location"){
 				html=setLocation(items[i],_createtime)+html;

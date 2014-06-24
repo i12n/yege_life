@@ -8,7 +8,7 @@ from datetime import date
 from datetime import datetime
 
 def get_news(request,username):
-	print('get_news')
+	#print('get_news')
 	if request.POST:
 		YYYYmm=request.POST.get("YYYYmm") or None
 		if YYYYmm==None:
@@ -20,7 +20,7 @@ def get_news(request,username):
 	today=date.today()
 	YYYYmm=today.strftime("%Y%m")
 	news=read_news(username,YYYYmm)
-	print news
+	#print news
 	return HttpResponse(news,mimetype="application/json")
 
 def index(request,username):

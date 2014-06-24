@@ -42,7 +42,7 @@ def thread_func():
 	global THREAD_RUN
 	global RECORD_MUTEX
 	while True:
-		print(USER_WANT_TO_DO_RECORD)
+		#print(USER_WANT_TO_DO_RECORD)
 		time.sleep(5)
 		if RECORD_MUTEX.acquire():
 			if USER_WANT_TO_DO_RECORD:
@@ -112,18 +112,18 @@ def write_news(uid,news_dict):
 		return False
 	
 def write_not_news_or_not(uid,ctype):
-	print ("write_not_or_not")
+	#print ("write_not_or_not")
 	global USER_WANT_TO_DO_RECORD
 	global THREAD_RUN
 	global RECORD_MUTEX
 	hit=False
 	username,ustate=get_username_by_uid(uid)
-	print(username)
+	#print(username)
 	if username==None:
 		return False
 	if RECORD_MUTEX.acquire():
 		if THREAD_RUN:
-			print("thread_run")
+			#print("thread_run")
             #if username in USER_WANT_TO_DO_RECORD.keys():
 			record= USER_WANT_TO_DO_RECORD[username]
 			if record:
@@ -134,7 +134,7 @@ def write_not_news_or_not(uid,ctype):
 		RECORD_MUTEX.release()
 	if hit:
 		####################do write
-		print ("write")
+		#print ("write")
 	return hit
 
 

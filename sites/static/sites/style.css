@@ -184,3 +184,8 @@ div.post_item div.clear{
 			color: #FFF;
 			display: none;
 		}
+div .post_item img{
+	max-height:300px;
+	max-width:400px;
+	text-align:center 
+}

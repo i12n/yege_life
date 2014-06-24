@@ -17,7 +17,7 @@ def index(request):
 
 
 def set_text_xml(msg):
-	print('set_text_xml')
+	#print('set_text_xml')
 	xml = """
 		<xml>
 		<ToUserName><![CDATA[%s]]></ToUserName>
@@ -26,7 +26,7 @@ def set_text_xml(msg):
 		<MsgType><![CDATA[%s]]></MsgType>
 		<Content><![CDATA[%s]]></Content>
 		</xml>"""%(msg['ToUserName'],msg['FromUserName'],msg['CreateTime'],msg['MsgType'], msg['Content'])
-	print msg['CreateTime']
+	#print msg['CreateTime']
 	return xml
 
 def get_msg(xml):
@@ -35,7 +35,7 @@ def get_msg(xml):
 	_msg={}
 	for node in xml:
 		_msg[node.tag]=node.text
-	print _msg['CreateTime']
+	#print _msg['CreateTime']
 	return _msg
 
 def handle_subscribe(msg):
@@ -49,7 +49,7 @@ def handle_subscribe(msg):
 	_content=set_text_xml(_msg)
 	return _content
 
-def handle_location(msg):
+def handle_location_or_image(msg):
 	print('handle_location')
 	msg_uid=msg['FromUserName']
 	_msg={}
@@ -61,8 +61,7 @@ def handle_location(msg):
 	_content=set_text_xml(_msg)
 	t=write_not_news_or_not(msg_uid,'location')
 	if t:
-		
-			write_news(msg_uid,msg)
+		write_news(msg_uid,msg)
 	return _content
 
 def handle_text(msg):
@@ -74,18 +73,16 @@ def handle_text(msg):
 	print(cmd)
 	if cmd=='cc':
 		today=datetime.date.today()
-		print(today)
-
 		end=datetime.date(2014,7,1)
-		print (end)
 		days=int((end-today).days)
-		print (days)
 		_msg={}
 		_msg['FromUserName']=msg['ToUserName']
 		_msg['ToUserName']=msg['FromUserName']
 		_msg['MsgType']='text'
 		_msg['CreateTime']= str(int(time.time()))
 		_msg['Content']='距离春纯毕业还有'+str(days)+'天'
+		if days<0:
+			_msg['Content']='杨春纯已经毕业'
 		_content=set_text_xml(_msg)
 		return _content
 	if cmd=='@@':	
@@ -108,8 +105,6 @@ def handle_text(msg):
 		_msg['Content']='注册失败'
 		_user=msg_content[2:].split('#')
 		_username=_user[0]
-		print(_user[0])
-		print(_user[1])
 		_pwd=_user[1]
 		t=write_user(msg_uid,_username,_pwd)
 		if t==-1:
@@ -118,9 +113,9 @@ def handle_text(msg):
 			_msg['Content']='注册失败,此用户名已经被注册'
 		if t==1:
 			_msg['Content']='注册成功'
-		print(t)
 		_content=set_text_xml(_msg)
 		return _content
+		
 	if cmd=='@+':
 		t=register_record(msg_uid,'location')
 		if t:
@@ -129,10 +124,21 @@ def handle_text(msg):
 			_msg['ToUserName']=msg['FromUserName']
 			_msg['MsgType']='text'
 			_msg['CreateTime']= str(int(time.time()))
-			_msg['Content']='可以发布地理消息'
+			_msg['Content']='可以发布位置消息'
 			_content=set_text_xml(_msg)
-			print msg
 			return _content
+	if cmd=='@*':
+		t=register_record(msg_uid,'image')
+		if t:
+			_msg={}
+			_msg['FromUserName']=msg['ToUserName']
+			_msg['ToUserName']=msg['FromUserName']
+			_msg['MsgType']='text'
+			_msg['CreateTime']= str(int(time.time()))
+			_msg['Content']='可以发布图片消息'
+			_content=set_text_xml(_msg)
+			return _content
+			
 def handle(msg):
 	print('handle')
 	print(msg['MsgType'])
@@ -145,8 +151,12 @@ def handle(msg):
 		_content=handle_text(msg)
 		return _content
 	if msg['MsgType']=='location':
-		_content=handle_location(msg)
+		_content=handle_location_or_image(msg)
 		return _content
+	if msg['MsgType']=='image':
+		_content=handle_location_or_image(msg)
+		return _content
+	
 #check weixin token
 
 def check_signature(request):
