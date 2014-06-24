@@ -15,13 +15,13 @@ def get_news(request,username):
 			today=date.today()
 			YYYYmm=today.strftime("%Y%m")
 		news=read_news(username,YYYYmm)
-        	return HttpResponse(news,mimetype="application/json")
+        	return HttpResponse(news,content_type ="application/json")
 
 	today=date.today()
 	YYYYmm=today.strftime("%Y%m")
 	news=read_news(username,YYYYmm)
 	#print news
-	return HttpResponse(news,mimetype="application/json")
+	return HttpResponse(news,content_type ="application/json")
 
 def index(request,username):
     return render(request, 'sites/index.html',{'username':username})
