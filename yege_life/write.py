@@ -132,7 +132,7 @@ def write_not_news_or_not(uid,ctype):
 					hit=True
 					USER_WANT_TO_DO_RECORD[username][1]=100
 		RECORD_MUTEX.release()
-	if hit:
+	#if hit:
 		####################do write
 		#print ("write")
 	return hit
