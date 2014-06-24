@@ -54,8 +54,8 @@ def thread_func():
 				break
  
 
-FILE_PATH='/home/git/yege_life.git/files/'
-#FILE_PATH='h:/life/yege_life/files/'
+#FILE_PATH='/home/git/yege_life.git/files/'
+FILE_PATH='h:/life/yege_life/files/'
 def write_months(username,YYYYmm):
 	try:
 		file_path=FILE_PATH+username+'/'
@@ -111,7 +111,7 @@ def write_news(uid,news_dict):
 	except IOError:
 		return False
 	
-def write_not_news_or_not(uid,ctype):
+def write_or_not(uid,ctype):
 	#print ("write_not_or_not")
 	global USER_WANT_TO_DO_RECORD
 	global THREAD_RUN

@@ -10,14 +10,13 @@ from django.utils.encoding import smart_str, smart_unicode
 import xml.etree.ElementTree as ET
 
 from yege_life import settings
-from yege_life.write import write_news,write_user,register_record,write_not_news_or_not
+from yege_life.write import write_news,write_user,register_record,write_or_not
 # Create your views here.
 def index(request):
 	return HttpResponse("hello,i'm here")
 
-
-def set_text_xml(msg):
-	#print('set_text_xml')
+#将dict格式转换为xml格式 dict_to_xml
+def dict_to_xml(msg):
 	xml = """
 		<xml>
 		<ToUserName><![CDATA[%s]]></ToUserName>
@@ -26,134 +25,107 @@ def set_text_xml(msg):
 		<MsgType><![CDATA[%s]]></MsgType>
 		<Content><![CDATA[%s]]></Content>
 		</xml>"""%(msg['ToUserName'],msg['FromUserName'],msg['CreateTime'],msg['MsgType'], msg['Content'])
-	#print msg['CreateTime']
 	return xml
-
-def get_msg(xml):
-	print('get_msg')
 	
+#将xml格式转换为dict格式 xml_to_dict
+def xml_to_dict(xml):
 	_msg={}
 	for node in xml:
 		_msg[node.tag]=node.text
-	#print _msg['CreateTime']
 	return _msg
 
+#生成回复文本消息
+def reply_text_to_user(msg,content):
+	_msg={}
+	_msg['FromUserName']=msg['ToUserName']
+	_msg['ToUserName']=msg['FromUserName']
+	_msg['MsgType']='text'
+	_msg['CreateTime']= str(int(time.time()))
+	_msg['Content']=content
+	return dict_to_xml(_msg)
+	
+#处理消息推送的订阅事件
 def handle_subscribe(msg):
-	print('handle_subscribe')
-	_msg={}
-	_msg['FromUserName']=msg['ToUserName']
-	_msg['ToUserName']=msg['FromUserName']
-	_msg['MsgType']='text'
-	_msg['CreateTime']= str(int(time.time()))
-	_msg['Content']='欢迎关注 yegelife,输入 cc 查询春纯毕业倒计时'
-	_content=set_text_xml(_msg)
-	return _content
+	content='欢迎关注 yegelife'
+	reply_msg=reply_text_to_user(msg,content)
+	return reply_msg
 
+#处理图片消息或地理位置消息
 def handle_location_or_image(msg,type):
-	print('handle_location')
 	msg_uid=msg['FromUserName']
-	_msg={}
-	_msg['FromUserName']=msg['ToUserName']
-	_msg['ToUserName']=msg['FromUserName']
-	_msg['MsgType']='text'
-	_msg['CreateTime']= str(int(time.time()))
-	_msg['Content']='发布成功'
-	_content=set_text_xml(_msg)
-	t=write_not_news_or_not(msg_uid,type)
+	t=write_or_not(msg_uid,type)
 	if t:
 		write_news(msg_uid,msg)
-	return _content
-
+		content='发布成功'
+		reply_msg=reply_text_to_user(msg,content)
+		return reply_msg
+		
+#处理文本消息
 def handle_text(msg):
-	print('handle_text')
 	msg_content=msg['Content']
 	cmd=msg_content[0:2]
 	msg_uid=msg['FromUserName']
 	msg['Content']=msg_content[2:]
-	print(cmd)
 	if cmd=='cc':
 		today=datetime.date.today()
 		end=datetime.date(2014,7,1)
 		days=int((end-today).days)
-		_msg={}
-		_msg['FromUserName']=msg['ToUserName']
-		_msg['ToUserName']=msg['FromUserName']
-		_msg['MsgType']='text'
-		_msg['CreateTime']= str(int(time.time()))
-		_msg['Content']='距离春纯毕业还有'+str(days)+'天'
+		content='距离春纯毕业还有'+str(days)+'天'
 		if days<0:
-			_msg['Content']='杨春纯已经毕业'
-		_content=set_text_xml(_msg)
-		return _content
+			content='杨春纯已经毕业'
+		reply_msg=reply_text_to_user(msg,content)
+		return reply_msg
 	if cmd=='@@':	
-		_msg={}
-		_msg['FromUserName']=msg['ToUserName']
-		_msg['ToUserName']=msg['FromUserName']
-		_msg['MsgType']='text'
-		_msg['CreateTime']= str(int(time.time()))
-		_msg['Content']='发布成功'
-		_content=set_text_xml(_msg)
+		content='发布成功'
+		reply_msg=reply_text_to_user(msg,content)
 		write_news(msg_uid,msg)
-		print msg
-		return _content
+		return reply_msg
 	if cmd=='@#':
-		_msg={}
-		_msg['FromUserName']=msg['ToUserName']
-		_msg['ToUserName']=msg['FromUserName']
-		_msg['MsgType']='text'
-		_msg['CreateTime']= str(int(time.time()))
-		_msg['Content']='注册失败'
+		content='注册失败'
 		_user=msg_content[2:].split('#')
 		_username=_user[0]
 		_pwd=_user[1]
 		t=write_user(msg_uid,_username,_pwd)
 		if t==-1:
-			_msg['Content']='注册失败,此微信号已经被注册'
+			content='注册失败,此微信号已经被注册'
 		if t==-2:
-			_msg['Content']='注册失败,此用户名已经被注册'
+			content='注册失败,此用户名已经被注册'
 		if t==1:
-			_msg['Content']='注册成功'
-		_content=set_text_xml(_msg)
-		return _content
+			content='注册成功'
+		reply_msg=reply_text_to_user(msg,content)
+		return reply_msg
 		
 	if cmd=='@+':
 		t=register_record(msg_uid,'location')
 		if t:
-			_msg={}
-			_msg['FromUserName']=msg['ToUserName']
-			_msg['ToUserName']=msg['FromUserName']
-			_msg['MsgType']='text'
-			_msg['CreateTime']= str(int(time.time()))
-			_msg['Content']='可以发布位置消息'
-			_content=set_text_xml(_msg)
-			return _content
+			content='可以发布位置消息'
+			reply_msg=reply_text_to_user(msg,content)
+			return reply_msg
 	if cmd=='@*':
 		t=register_record(msg_uid,'image')
 		if t:
-			_msg={}
-			_msg['FromUserName']=msg['ToUserName']
-			_msg['ToUserName']=msg['FromUserName']
-			_msg['MsgType']='text'
-			_msg['CreateTime']= str(int(time.time()))
-			_msg['Content']='可以发布图片消息'
-			_content=set_text_xml(_msg)
-			return _content
+			content='可以发布图片消息'
+			reply_msg=reply_text_to_user(msg,content)
+			return reply_msg
 			
+#接收来自微信的消息			
 def handle(msg):
-	print('handle')
-	print(msg['MsgType'])
 	msg_type=msg['MsgType']
-	if msg['MsgType']=='event':
+	#事件消息
+	if msg_type=='event':
 		if msg['Event']=='subscribe':
 			_content=handle_subscribe(msg)
 			return _content
-	if msg['MsgType']=='text':
+	#文本消息
+	if msg_type=='text':
 		_content=handle_text(msg)
 		return _content
-	if msg['MsgType']=='location':
+	#地理位置消息
+	if msg_type=='location':
 		_content=handle_location_or_image(msg,'location')
 		return _content
-	if msg['MsgType']=='image':
+	#图片消息
+	if msg_type=='image':
 		_content=handle_location_or_image(msg,'image')
 		return _content
 	
@@ -179,14 +151,11 @@ def check_signature(request):
 
 @csrf_exempt
 def check_signature1(request):
-	print('this is test')
 	if request.method == 'GET':
 		response=HttpResponse(check_signature(request))
-		print('get\n')
 		return response
 	else:
-		print('post\n')
 		xml = ET.fromstring(request.body)
-		msg=get_msg(xml)
+		msg=xml_to_dict(xml)
 		content=handle(msg)
 		return HttpResponse(content)
