@@ -49,7 +49,7 @@ def handle_subscribe(msg):
 	_content=set_text_xml(_msg)
 	return _content
 
-def handle_location_or_image(msg):
+def handle_location_or_image(msg,type):
 	print('handle_location')
 	msg_uid=msg['FromUserName']
 	_msg={}
@@ -59,7 +59,7 @@ def handle_location_or_image(msg):
 	_msg['CreateTime']= str(int(time.time()))
 	_msg['Content']='发布成功'
 	_content=set_text_xml(_msg)
-	t=write_not_news_or_not(msg_uid,'location')
+	t=write_not_news_or_not(msg_uid,type)
 	if t:
 		write_news(msg_uid,msg)
 	return _content
@@ -151,10 +151,10 @@ def handle(msg):
 		_content=handle_text(msg)
 		return _content
 	if msg['MsgType']=='location':
-		_content=handle_location_or_image(msg)
+		_content=handle_location_or_image(msg,'location')
 		return _content
 	if msg['MsgType']=='image':
-		_content=handle_location_or_image(msg)
+		_content=handle_location_or_image(msg,'image')
 		return _content
 	
 #check weixin token
