@@ -98,9 +98,15 @@ document.getElementById(_item.MsgId).onclick=function (){
 		return function(X,Y,AD,Z,google){
 			return function(event){
 				 var e = event || window.event;
-				 var offsets = this.getBoundingClientRect();
-				 var top = offsets.top;
-				var left = offsets.left;
+				 var offsets = this.getBoundingClientRect();				 
+				 //var top = offsets.top;
+				 //var left = offsets.left;
+				var scrollX = document.documentElement.scrollLeft || document.body.scrollLeft;
+				var scrollY = document.documentElement.scrollTop || document.body.scrollTop;
+				//var left = e.pageX || e.clientX + scrollX;
+				//var top = e.pageY || e.clientY + scrollY;
+				 var top = offsets.top+scrollY;
+				 var left = offsets.left+scrollX;
 				var panel=document.getElementById("panel");
 				panel.style.display="block";
 				var map_canvas=document.getElementById("map_canvas");
