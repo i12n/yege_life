@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 import json
 from datetime import date
@@ -6,10 +7,21 @@ import os.path
 import thread
 import threading
 import time
+
+from yege_life.settings import FILE_PATH
+
+#记录用户在微信端发送的命令
 USER_WANT_TO_DO_RECORD={}
+
+#记录是否存在记录线程
 THREAD_RUN=False
+
+#互斥锁
 RECORD_MUTEX = threading.Lock()
 
+#开辟记录线程，记录用户在微信端发送的命令，
+#uid：是微信分配的id
+#cmd_type：用户将要发送的内容类型， 如图片，地理信息等
 def register_record(uid,cmd_type,sec=100):
 	global USER_WANT_TO_DO_RECORD
 	global THREAD_RUN
@@ -25,7 +37,8 @@ def register_record(uid,cmd_type,sec=100):
 			thread.start_new_thread(thread_func,())
 		RECORD_MUTEX.release()
 	return True
-        
+
+#计时，一段时间之后用户命令失效
 def manage_record():
 	global USER_WANT_TO_DO_RECORD
 	global THREAD_RUN
@@ -36,13 +49,12 @@ def manage_record():
 		else:
  			 USER_WANT_TO_DO_RECORD[username][1]-=1
         
-
+#开辟记录线程
 def thread_func():
 	global USER_WANT_TO_DO_RECORD
 	global THREAD_RUN
 	global RECORD_MUTEX
 	while True:
-		#print(USER_WANT_TO_DO_RECORD)
 		time.sleep(5)
 		if RECORD_MUTEX.acquire():
 			if USER_WANT_TO_DO_RECORD:
@@ -54,8 +66,7 @@ def thread_func():
 				break
  
 
-FILE_PATH='/home/git/yege_life.git/files/'
-#FILE_PATH='h:/life/yege_life/files/'
+#写入月份文件
 def write_months(username,YYYYmm):
 	try:
 		file_path=FILE_PATH+username+'/'
@@ -88,6 +99,8 @@ def read_months(username,YYYY):
 		months_json='{"success":false}'
 		return months_json
 
+
+#转化为json
 def convert_to_json(news_dict):
 	create_time_stamp=int(news_dict["CreateTime"])+8*60*60
 	create_time_str=(datetime.fromtimestamp(create_time_stamp)).strftime("%Y-%m-%d %H:%M:%S")
@@ -96,6 +109,7 @@ def convert_to_json(news_dict):
 	news_json = json.dumps(news_dict)+','
 	return create_date_str,news_json
 
+#将用户输入的内容存入文件
 def write_news(uid,news_dict):
 	username,ustate=get_username_by_uid(uid)
 	create_date_str,news_json=convert_to_json(news_dict)
@@ -110,7 +124,8 @@ def write_news(uid,news_dict):
 			return True
 	except IOError:
 		return False
-	
+
+#判断是否有用户的发送命令记录		
 def write_or_not(uid,ctype):
 	#print ("write_not_or_not")
 	global USER_WANT_TO_DO_RECORD
@@ -118,13 +133,10 @@ def write_or_not(uid,ctype):
 	global RECORD_MUTEX
 	hit=False
 	username,ustate=get_username_by_uid(uid)
-	#print(username)
 	if username==None:
 		return False
 	if RECORD_MUTEX.acquire():
 		if THREAD_RUN:
-			#print("thread_run")
-            #if username in USER_WANT_TO_DO_RECORD.keys():
 			record= USER_WANT_TO_DO_RECORD[username]
 			if record:
 				if ctype==record[0]:
@@ -132,13 +144,10 @@ def write_or_not(uid,ctype):
 					hit=True
 					USER_WANT_TO_DO_RECORD[username][1]=100
 		RECORD_MUTEX.release()
-	#if hit:
-		####################do write
-		#print ("write")
 	return hit
 
 
-
+#读取用户文件中的内容
 def read_news(username,news_file_name):
 	try:
 		file_path=FILE_PATH+username+'/'+news_file_name
@@ -151,7 +160,7 @@ def read_news(username,news_file_name):
 		news_json='{"success":false}'
 		return news_json
 
-
+#保存新用户，微信用户id 与 username 的一一对应关系
 def write_user(uid,username,pwd,ustate='1'):
 	if uid=='' or username=='':
 		return  -8
@@ -188,6 +197,7 @@ def get_username_by_uid(uid):
 			return (None,None)
 	except IOError:
 		return (None,None)
+
 
 def change_uid_by_username(uid,username,pwd):
 	try:

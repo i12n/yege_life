@@ -66,13 +66,8 @@ def handle_text(msg):
 	cmd=msg_content[0:2]
 	msg_uid=msg['FromUserName']
 	msg['Content']=msg_content[2:]
-	if cmd=='cc':
-		today=datetime.date.today()
-		end=datetime.date(2014,7,1)
-		days=int((end-today).days)
-		content='距离春纯毕业还有'+str(days)+'天'
-		if days<0:
-			content='杨春纯已经毕业'
+	if cmd=='##':
+		content='测试成功'
 		reply_msg=reply_text_to_user(msg,content)
 		return reply_msg
 	if cmd=='@@':	
@@ -129,7 +124,7 @@ def handle(msg):
 		_content=handle_location_or_image(msg,'image')
 		return _content
 	
-#check weixin token
+#检测微信的 token
 
 def check_signature(request):
 	signature=request.GET.get('signature',None)

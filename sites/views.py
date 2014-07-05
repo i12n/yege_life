@@ -7,18 +7,20 @@ import json
 from datetime import date
 from datetime import datetime
 
-def get_news(request,username):
-	#print('get_news')
+def get_news(request,username,yyyyMM=None):
+	print(yyyyMM)
 	if request.POST:
-		YYYYmm=request.POST.get("YYYYmm") or None
+		YYYYmm=yyyyMM or request.POST.get("YYYYmm") or None
 		if YYYYmm==None:
 			today=date.today()
 			YYYYmm=today.strftime("%Y%m")
-		news=read_news(username,YYYYmm)
-        	return HttpResponse(news,content_type ="application/json")
+			print(yyyyMM)
+			news=read_news(username,YYYYmm)
+			print news
+			return HttpResponse(news,content_type ="application/json")
 
 	today=date.today()
-	YYYYmm=today.strftime("%Y%m")
+	YYYYmm=yyyyMM or today.strftime("%Y%m")
 	news=read_news(username,YYYYmm)
 	#print news
 	return HttpResponse(news,content_type ="application/json")

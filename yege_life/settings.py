@@ -1,3 +1,4 @@
+# coding=utf-8
 """
 Django settings for yege_life project.
 
@@ -81,9 +82,19 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.6/howto/static-files/
 
 STATIC_URL = '/static/'
-WEIXIN_TOKEN = 'xiaoyu'
+
+
 #STATICFILES_DIRS = (
 #    os.path.join(BASE_DIR, "static"),
 #    '/var/www/static/',
 #)
+
+#
 STATIC_ROOT='/home/git/yege_life.git/src/static/'
+
+#微信token
+WEIXIN_TOKEN = 'xiaoyu'
+
+#保存记录文件的路径
+FILE_PATH='/home/git/yege_life.git/files/'
+#FILE_PATH='h:/life/yege_life/files/'
