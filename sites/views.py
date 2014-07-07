@@ -14,9 +14,7 @@ def get_news(request,username,yyyyMM=None):
 		if YYYYmm==None:
 			today=date.today()
 			YYYYmm=today.strftime("%Y%m")
-			print(yyyyMM)
 			news=read_news(username,YYYYmm)
-			print news
 			return HttpResponse(news,content_type ="application/json")
 
 	today=date.today()
@@ -25,5 +23,5 @@ def get_news(request,username,yyyyMM=None):
 	#print news
 	return HttpResponse(news,content_type ="application/json")
 
-def index(request,username):
-    return render(request, 'sites/index.html',{'username':username})
+def index(request,username,yyyyMM=None):
+    return render(request, 'sites/index.html',{'username':username,'yyyyMM':yyyyMM})

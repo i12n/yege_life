@@ -158,7 +158,7 @@ else{// code for IE6, IE5
 }
 
 
-var url="/sites/{{ username }}/get/";
+var url="/sites/{{ username }}/get/{{ yyyyMM }}";
 xmlhttp.open("GET",url,true);
 xmlhttp.send();
 xmlhttp.onreadystatechange=function(){
